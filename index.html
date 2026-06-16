@@ -1,101 +1,428 @@
 <!DOCTYPE html>
 <html lang="ko">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>로또 번호 자동 추출기</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        max-width: 540px;
-        margin: 40px auto;
-        padding: 0 20px;
-        color: #333;
-        background: #f7f9fc;
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>오늘의 명언</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #fff;
+      font-family: Arial, sans-serif;
+      color: #111;
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 15px;
+      font-size: 16px;
+      outline: none;
+      margin-bottom: 10px;
+    }
+
+    textarea {
+      resize: none;
+    }
+
+    .page {
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    .write-box {
+      min-height: 100vh;
+      max-width: 620px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .write-box h1 {
+      font-size: 42px;
+      margin-bottom: 12px;
+    }
+
+    .write-box p {
+      color: #999;
+      margin-bottom: 14px;
+    }
+
+    .notice {
+      font-size: 14px;
+      color: #c0392b;
+      background: #fff5f5;
+      border: 1px solid #ffd6d6;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 22px;
+      line-height: 1.5;
+    }
+
+    #messageInput {
+      height: 140px;
+      line-height: 1.6;
+    }
+
+    .full-btn {
+      width: 100%;
+      background: #111;
+      color: #fff;
+      padding: 16px;
+      border-radius: 12px;
+      font-size: 16px;
+    }
+
+    .message-screen {
+      display: none;
+      min-height: 100vh;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .message-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 100%;
+      max-width: 1100px;
+      padding: 0 20px;
+      text-align: center;
+      transform: translate(-50%, -50%);
+    }
+
+    .message-wrapper {
+      display: inline-block;
+      max-width: 100%;
+    }
+
+    .message {
+      font-size: clamp(48px, 8vw, 100px);
+      font-weight: 800;
+      line-height: 1.25;
+      letter-spacing: -3px;
+      word-break: keep-all;
+      white-space: pre-wrap;
+      cursor: default;
+      transition: opacity 0.25s ease;
+    }
+
+    .message:hover {
+      opacity: 0.86;
+    }
+
+    .hidden-zone {
+      width: 560px;
+      max-width: 90vw;
+      margin: 25px auto 0;
+      opacity: 0;
+      transform: translateY(20px);
+      pointer-events: none;
+      transition: all 0.3s ease;
+    }
+
+    .message-wrapper:hover .hidden-zone {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .stats {
+      color: #999;
+      font-size: 14px;
+      margin-bottom: 14px;
+    }
+
+    .like-btn {
+      background: #f3f3f3;
+      color: #111;
+      padding: 10px 20px;
+      border-radius: 999px;
+      font-size: 14px;
+      margin-bottom: 30px;
+    }
+
+    .comment-area {
+      text-align: left;
+    }
+
+    #commentInput {
+      height: 85px;
+      line-height: 1.5;
+    }
+
+    .comments {
+      margin-top: 30px;
+      max-height: 240px;
+      overflow-y: auto;
+    }
+
+    .comment {
+      border-top: 1px solid #eee;
+      padding: 16px 0;
+    }
+
+    .comment-name {
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .comment-text {
+      color: #333;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .comment-meta {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #aaa;
+    }
+
+    .bottom-text {
+      position: fixed;
+      bottom: 24px;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      font-size: 13px;
+      color: #bbb;
+    }
+
+    .reset-btn {
+      margin-left: 10px;
+      background: transparent;
+      color: #999;
+      font-size: 13px;
+      padding: 4px 6px;
+    }
+
+    .reset-btn:hover {
+      color: #111;
+    }
+
+    @media (max-width: 600px) {
+      .message {
+        font-size: clamp(38px, 13vw, 70px);
+        letter-spacing: -2px;
       }
-      h1 {
-        text-align: center;
-        margin-bottom: 24px;
+
+      .hidden-zone {
+        opacity: 1;
+        transform: none;
+        pointer-events: auto;
+        margin-top: 28px;
       }
-      .card {
-        background: #fff;
-        border-radius: 16px;
-        box-shadow: 0 14px 30px rgba(0, 0, 0, 0.08);
-        padding: 24px;
-      }
-      button {
-        display: block;
-        width: 100%;
-        cursor: pointer;
-        margin-top: 16px;
-        border: none;
-        border-radius: 12px;
-        padding: 14px;
-        background: #4a73ff;
-        color: #fff;
-        font-size: 1rem;
-      }
-      .numbers {
+
+      .message-center {
+        position: static;
+        transform: none;
+        min-height: 100vh;
         display: flex;
-        justify-content: space-between;
-        gap: 10px;
-        flex-wrap: wrap;
-        margin-top: 20px;
+        flex-direction: column;
+        justify-content: center;
       }
-      .number {
-        width: 60px;
-        height: 60px;
-        display: grid;
-        place-items: center;
-        border-radius: 50%;
-        background: #e6ebff;
-        color: #2a2f41;
-        font-size: 1.2rem;
-        font-weight: bold;
+
+      .comments {
+        max-height: 200px;
       }
-      .note {
-        margin-top: 12px;
-        color: #666;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="card">
-      <h1>로또 번호 자동 추출기</h1>
-      <p>아래 버튼을 눌러 1~45 사이의 중복 없는 로또 번호 6개를 생성합니다.</p>
-      <button id="generateBtn">번호 생성</button>
-      <div class="numbers" id="lottoNumbers"></div>
-      <p class="note">생성된 번호는 예시일 뿐이며, 실제 당첨을 보장하지 않습니다.</p>
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="page">
+
+    <div class="write-box" id="writeBox">
+      <h1>오늘의 명언</h1>
+      <p>오늘 하루 사람들에게 보여주고 싶은 문장을 남겨보세요.</p>
+
+      <div class="notice">
+        오늘의 명언은 한 번 등록하면 24시간 동안 변경할 수 없습니다.
+      </div>
+
+      <textarea id="messageInput" placeholder="예) 아빠는 언제나 네 편이다."></textarea>
+      <button class="full-btn" onclick="createMessage()">오늘의 명언 등록하기</button>
     </div>
-    <script>
-      function generateLottoNumbers() {
-        const numbers = [];
-        while (numbers.length < 6) {
-          const candidate = Math.floor(Math.random() * 45) + 1;
-          if (!numbers.includes(candidate)) {
-            numbers.push(candidate);
-          }
-        }
-        return numbers.sort((a, b) => a - b);
+
+    <div class="message-screen" id="messageScreen">
+      <div class="message-center">
+        <div class="message-wrapper">
+
+          <div class="message" id="mainMessage"></div>
+
+          <div class="hidden-zone">
+            <div class="stats">
+              ❤️ 좋아요 <span id="likeCount">0</span>
+              &nbsp;&nbsp;·&nbsp;&nbsp;
+              👁 조회수 <span id="viewCount">0</span>
+            </div>
+
+            <button class="like-btn" onclick="addLike()">좋아요 누르기</button>
+
+            <div class="comment-area">
+              <input type="text" id="nameInput" placeholder="이름" />
+              <textarea id="commentInput" placeholder="마음을 남겨주세요"></textarea>
+              <button class="full-btn" onclick="addComment()">댓글 남기기</button>
+
+              <div class="comments" id="comments"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="bottom-text">
+        오늘 남기고 싶은 말이 있나요?
+        <button class="reset-btn" onclick="resetMessage()">새 명언 작성</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const LOCK_TIME = 24 * 60 * 60 * 1000;
+
+    let message = localStorage.getItem("mainMessage") || "";
+    let createdAt = Number(localStorage.getItem("createdAt") || 0);
+    let views = Number(localStorage.getItem("views") || 0);
+    let likes = Number(localStorage.getItem("likes") || 0);
+    let comments = JSON.parse(localStorage.getItem("comments") || "[]");
+
+    if (message) {
+      showMessage();
+    }
+
+    function createMessage() {
+      const input = document.getElementById("messageInput").value.trim();
+
+      if (!input) {
+        alert("명언을 입력해주세요.");
+        return;
       }
 
-      function renderNumbers() {
-        const lottoNumbers = document.getElementById('lottoNumbers');
-        lottoNumbers.innerHTML = '';
-
-        const numbers = generateLottoNumbers();
-        numbers.forEach((num) => {
-          const span = document.createElement('span');
-          span.className = 'number';
-          span.textContent = num;
-          lottoNumbers.appendChild(span);
-        });
+      if (message && Date.now() - createdAt < LOCK_TIME) {
+        alert("오늘의 명언은 등록 후 24시간 동안 변경할 수 없습니다.");
+        return;
       }
 
-      document.getElementById('generateBtn').addEventListener('click', renderNumbers);
+      message = input;
+      createdAt = Date.now();
+      views = 0;
+      likes = 0;
+      comments = [];
 
-      // 초기 생성
-      renderNumbers();
-    </script>
-  </body>
+      localStorage.setItem("mainMessage", message);
+      localStorage.setItem("createdAt", createdAt);
+      localStorage.setItem("views", views);
+      localStorage.setItem("likes", likes);
+      localStorage.setItem("comments", JSON.stringify(comments));
+
+      showMessage();
+    }
+
+    function showMessage() {
+      views++;
+      localStorage.setItem("views", views);
+
+      document.getElementById("writeBox").style.display = "none";
+      document.getElementById("messageScreen").style.display = "block";
+
+      document.getElementById("mainMessage").innerText = message;
+      document.getElementById("viewCount").innerText = views;
+      document.getElementById("likeCount").innerText = likes;
+
+      renderComments();
+    }
+
+    function addLike() {
+      likes++;
+      localStorage.setItem("likes", likes);
+      document.getElementById("likeCount").innerText = likes;
+    }
+
+    function addComment() {
+      const name = document.getElementById("nameInput").value.trim();
+      const text = document.getElementById("commentInput").value.trim();
+
+      if (!name || !text) {
+        alert("이름과 댓글을 입력해주세요.");
+        return;
+      }
+
+      comments.unshift({
+        name: name,
+        text: text,
+        time: new Date().toLocaleString()
+      });
+
+      localStorage.setItem("comments", JSON.stringify(comments));
+
+      document.getElementById("nameInput").value = "";
+      document.getElementById("commentInput").value = "";
+
+      renderComments();
+    }
+
+    function renderComments() {
+      const commentsBox = document.getElementById("comments");
+      commentsBox.innerHTML = "";
+
+      comments.forEach(comment => {
+        const div = document.createElement("div");
+        div.className = "comment";
+
+        div.innerHTML = `
+          <div class="comment-name">${escapeHtml(comment.name)}</div>
+          <div class="comment-text">${escapeHtml(comment.text)}</div>
+          <div class="comment-meta">${comment.time}</div>
+        `;
+
+        commentsBox.appendChild(div);
+      });
+    }
+
+    function resetMessage() {
+      const now = Date.now();
+
+      if (message && now - createdAt < LOCK_TIME) {
+        const remain = LOCK_TIME - (now - createdAt);
+        const hours = Math.ceil(remain / (60 * 60 * 1000));
+        alert(`오늘의 명언은 약 ${hours}시간 후 다시 작성할 수 있습니다.`);
+        return;
+      }
+
+      localStorage.clear();
+      location.reload();
+    }
+
+    function escapeHtml(text) {
+      return text
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+  </script>
+
+</body>
 </html>
