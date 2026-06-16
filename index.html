@@ -6,9 +6,7 @@
   <title>오늘의 명언</title>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -24,8 +22,7 @@
       font-family: inherit;
     }
 
-    input,
-    textarea {
+    input, textarea {
       width: 100%;
       border: 1px solid #ddd;
       border-radius: 12px;
@@ -35,9 +32,7 @@
       margin-bottom: 10px;
     }
 
-    textarea {
-      resize: none;
-    }
+    textarea { resize: none; }
 
     .page {
       width: 100%;
@@ -81,6 +76,13 @@
       line-height: 1.6;
     }
 
+    .count {
+      text-align: right;
+      color: #aaa;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+
     .full-btn {
       width: 100%;
       background: #111;
@@ -114,7 +116,7 @@
     }
 
     .message {
-      font-size: clamp(48px, 8vw, 100px);
+      font-size: 88px;
       font-weight: 800;
       line-height: 1.25;
       letter-spacing: -3px;
@@ -124,9 +126,7 @@
       transition: opacity 0.25s ease;
     }
 
-    .message:hover {
-      opacity: 0.86;
-    }
+    .message:hover { opacity: 0.86; }
 
     .hidden-zone {
       width: 560px;
@@ -159,9 +159,7 @@
       margin-bottom: 30px;
     }
 
-    .comment-area {
-      text-align: left;
-    }
+    .comment-area { text-align: left; }
 
     #commentInput {
       height: 85px;
@@ -214,13 +212,11 @@
       padding: 4px 6px;
     }
 
-    .reset-btn:hover {
-      color: #111;
-    }
+    .reset-btn:hover { color: #111; }
 
     @media (max-width: 600px) {
       .message {
-        font-size: clamp(38px, 13vw, 70px);
+        font-size: 52px;
         letter-spacing: -2px;
       }
 
@@ -228,7 +224,6 @@
         opacity: 1;
         transform: none;
         pointer-events: auto;
-        margin-top: 28px;
       }
 
       .message-center {
@@ -238,10 +233,6 @@
         display: flex;
         flex-direction: column;
         justify-content: center;
-      }
-
-      .comments {
-        max-height: 200px;
       }
     }
   </style>
@@ -256,10 +247,13 @@
       <p>오늘 하루 사람들에게 보여주고 싶은 문장을 남겨보세요.</p>
 
       <div class="notice">
-        오늘의 명언은 한 번 등록하면 24시간 동안 변경할 수 없습니다.
+        오늘의 명언은 한 번 등록하면 24시간 동안 변경할 수 없습니다.<br>
+        문장은 최대 100자까지만 입력할 수 있습니다.
       </div>
 
-      <textarea id="messageInput" placeholder="예) 아빠는 언제나 네 편이다."></textarea>
+      <textarea id="messageInput" maxlength="100" placeholder="예) 아빠는 언제나 네 편이다."></textarea>
+      <div class="count"><span id="charCount">0</span> / 100</div>
+
       <button class="full-btn" onclick="createMessage()">오늘의 명언 등록하기</button>
     </div>
 
@@ -307,15 +301,27 @@
     let likes = Number(localStorage.getItem("likes") || 0);
     let comments = JSON.parse(localStorage.getItem("comments") || "[]");
 
+    const messageInput = document.getElementById("messageInput");
+    const charCount = document.getElementById("charCount");
+
+    messageInput.addEventListener("input", function () {
+      charCount.innerText = messageInput.value.length;
+    });
+
     if (message) {
       showMessage();
     }
 
     function createMessage() {
-      const input = document.getElementById("messageInput").value.trim();
+      const input = messageInput.value.trim();
 
       if (!input) {
         alert("명언을 입력해주세요.");
+        return;
+      }
+
+      if (input.length > 100) {
+        alert("오늘의 명언은 100자 이하만 가능합니다.");
         return;
       }
 
@@ -350,7 +356,30 @@
       document.getElementById("viewCount").innerText = views;
       document.getElementById("likeCount").innerText = likes;
 
+      adjustFontSize();
       renderComments();
+    }
+
+    function adjustFontSize() {
+      const messageEl = document.getElementById("mainMessage");
+      const length = messageEl.innerText.length;
+
+      if (window.innerWidth <= 600) {
+        if (length > 70) messageEl.style.fontSize = "34px";
+        else if (length > 40) messageEl.style.fontSize = "42px";
+        else messageEl.style.fontSize = "52px";
+        return;
+      }
+
+      if (length > 80) {
+        messageEl.style.fontSize = "44px";
+      } else if (length > 60) {
+        messageEl.style.fontSize = "56px";
+      } else if (length > 35) {
+        messageEl.style.fontSize = "72px";
+      } else {
+        messageEl.style.fontSize = "88px";
+      }
     }
 
     function addLike() {
