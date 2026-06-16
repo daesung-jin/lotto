@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>오늘의 명언</title>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     * { box-sizing: border-box; }
 
@@ -16,11 +18,7 @@
       color: #111;
     }
 
-    button {
-      border: none;
-      cursor: pointer;
-      font-family: inherit;
-    }
+    button { border: none; cursor: pointer; font-family: inherit; }
 
     input, textarea {
       width: 100%;
@@ -34,10 +32,7 @@
 
     textarea { resize: none; }
 
-    .page {
-      width: 100%;
-      min-height: 100vh;
-    }
+    .page { width: 100%; min-height: 100vh; }
 
     .write-box {
       min-height: 100vh;
@@ -50,15 +45,9 @@
       text-align: center;
     }
 
-    .write-box h1 {
-      font-size: 42px;
-      margin-bottom: 12px;
-    }
+    .write-box h1 { font-size: 42px; margin-bottom: 12px; }
 
-    .write-box p {
-      color: #999;
-      margin-bottom: 14px;
-    }
+    .write-box p { color: #999; margin-bottom: 14px; }
 
     .notice {
       font-size: 14px;
@@ -71,10 +60,7 @@
       line-height: 1.5;
     }
 
-    #messageInput {
-      height: 140px;
-      line-height: 1.6;
-    }
+    #messageInput { height: 140px; line-height: 1.6; }
 
     .count {
       text-align: right;
@@ -90,6 +76,17 @@
       padding: 16px;
       border-radius: 12px;
       font-size: 16px;
+    }
+
+    .share-box {
+      margin-top: 15px;
+      padding: 12px;
+      background: #f7f7f7;
+      border-radius: 12px;
+      font-size: 14px;
+      color: #555;
+      word-break: break-all;
+      display: none;
     }
 
     .message-screen {
@@ -123,10 +120,7 @@
       word-break: keep-all;
       white-space: pre-wrap;
       cursor: default;
-      transition: opacity 0.25s ease;
     }
-
-    .message:hover { opacity: 0.86; }
 
     .hidden-zone {
       width: 560px;
@@ -209,10 +203,7 @@
       background: transparent;
       color: #999;
       font-size: 13px;
-      padding: 4px 6px;
     }
-
-    .reset-btn:hover { color: #111; }
 
     @media (max-width: 600px) {
       .message {
@@ -240,218 +231,280 @@
 
 <body>
 
-  <div class="page">
+<div class="page">
 
-    <div class="write-box" id="writeBox">
-      <h1>오늘의 명언</h1>
-      <p>오늘 하루 사람들에게 보여주고 싶은 문장을 남겨보세요.</p>
+  <div class="write-box" id="writeBox">
+    <h1>오늘의 명언</h1>
+    <p>오늘 하루 사람들에게 보여주고 싶은 문장을 남겨보세요.</p>
 
-      <div class="notice">
-        오늘의 명언은 한 번 등록하면 24시간 동안 변경할 수 없습니다.<br>
-        문장은 최대 100자까지만 입력할 수 있습니다.
-      </div>
-
-      <textarea id="messageInput" maxlength="100" placeholder="예) 아빠는 언제나 네 편이다."></textarea>
-      <div class="count"><span id="charCount">0</span> / 100</div>
-
-      <button class="full-btn" onclick="createMessage()">오늘의 명언 등록하기</button>
+    <div class="notice">
+      오늘의 명언은 한 번 등록하면 24시간 동안 변경할 수 없습니다.<br>
+      문장은 최대 100자까지만 입력할 수 있습니다.
     </div>
 
-    <div class="message-screen" id="messageScreen">
-      <div class="message-center">
-        <div class="message-wrapper">
+    <textarea id="messageInput" maxlength="100" placeholder="예) 아빠는 언제나 네 편이다."></textarea>
+    <div class="count"><span id="charCount">0</span> / 100</div>
 
-          <div class="message" id="mainMessage"></div>
+    <button class="full-btn" onclick="createQuote()">오늘의 명언 등록하기</button>
 
-          <div class="hidden-zone">
-            <div class="stats">
-              ❤️ 좋아요 <span id="likeCount">0</span>
-              &nbsp;&nbsp;·&nbsp;&nbsp;
-              👁 조회수 <span id="viewCount">0</span>
-            </div>
-
-            <button class="like-btn" onclick="addLike()">좋아요 누르기</button>
-
-            <div class="comment-area">
-              <input type="text" id="nameInput" placeholder="이름" />
-              <textarea id="commentInput" placeholder="마음을 남겨주세요"></textarea>
-              <button class="full-btn" onclick="addComment()">댓글 남기기</button>
-
-              <div class="comments" id="comments"></div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <div class="bottom-text">
-        오늘 남기고 싶은 말이 있나요?
-        <button class="reset-btn" onclick="resetMessage()">새 명언 작성</button>
-      </div>
-    </div>
-
+    <div class="share-box" id="shareBox"></div>
   </div>
 
-  <script>
-    const LOCK_TIME = 24 * 60 * 60 * 1000;
+  <div class="message-screen" id="messageScreen">
+    <div class="message-center">
+      <div class="message-wrapper">
 
-    let message = localStorage.getItem("mainMessage") || "";
-    let createdAt = Number(localStorage.getItem("createdAt") || 0);
-    let views = Number(localStorage.getItem("views") || 0);
-    let likes = Number(localStorage.getItem("likes") || 0);
-    let comments = JSON.parse(localStorage.getItem("comments") || "[]");
+        <div class="message" id="mainMessage"></div>
 
-    const messageInput = document.getElementById("messageInput");
-    const charCount = document.getElementById("charCount");
+        <div class="hidden-zone">
+          <div class="stats">
+            ❤️ 좋아요 <span id="likeCount">0</span>
+            &nbsp;&nbsp;·&nbsp;&nbsp;
+            👁 조회수 <span id="viewCount">0</span>
+          </div>
 
-    messageInput.addEventListener("input", function () {
-      charCount.innerText = messageInput.value.length;
-    });
+          <button class="like-btn" onclick="addLike()">좋아요 누르기</button>
 
-    if (message) {
-      showMessage();
+          <div class="comment-area">
+            <input type="text" id="nameInput" placeholder="이름" />
+            <textarea id="commentInput" placeholder="마음을 남겨주세요"></textarea>
+            <button class="full-btn" onclick="addComment()">댓글 남기기</button>
+
+            <div class="comments" id="comments"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="bottom-text">
+      오늘 남기고 싶은 말이 있나요?
+      <button class="reset-btn" onclick="goHome()">나도 만들기</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const SUPABASE_URL = "https://ymwstrzyeumiawhhvsyu.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_n5DRa5cpw2-QE5mH91G85Q_8FgzmPMe";
+
+  const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  let currentQuote = null;
+
+  const messageInput = document.getElementById("messageInput");
+  const charCount = document.getElementById("charCount");
+
+  messageInput.addEventListener("input", () => {
+    charCount.innerText = messageInput.value.length;
+  });
+
+  window.addEventListener("load", async () => {
+    const params = new URLSearchParams(window.location.search);
+    const slug = params.get("q");
+
+    if (slug) {
+      await loadQuote(slug);
+    }
+  });
+
+  function makeSlug() {
+    return Math.random().toString(36).substring(2, 8);
+  }
+
+  async function createQuote() {
+    const message = messageInput.value.trim();
+
+    if (!message) {
+      alert("명언을 입력해주세요.");
+      return;
     }
 
-    function createMessage() {
-      const input = messageInput.value.trim();
-
-      if (!input) {
-        alert("명언을 입력해주세요.");
-        return;
-      }
-
-      if (input.length > 100) {
-        alert("오늘의 명언은 100자 이하만 가능합니다.");
-        return;
-      }
-
-      if (message && Date.now() - createdAt < LOCK_TIME) {
-        alert("오늘의 명언은 등록 후 24시간 동안 변경할 수 없습니다.");
-        return;
-      }
-
-      message = input;
-      createdAt = Date.now();
-      views = 0;
-      likes = 0;
-      comments = [];
-
-      localStorage.setItem("mainMessage", message);
-      localStorage.setItem("createdAt", createdAt);
-      localStorage.setItem("views", views);
-      localStorage.setItem("likes", likes);
-      localStorage.setItem("comments", JSON.stringify(comments));
-
-      showMessage();
+    if (message.length > 100) {
+      alert("명언은 100자 이하만 가능합니다.");
+      return;
     }
 
-    function showMessage() {
-      views++;
-      localStorage.setItem("views", views);
+    const slug = makeSlug();
 
-      document.getElementById("writeBox").style.display = "none";
-      document.getElementById("messageScreen").style.display = "block";
+    const { data, error } = await db
+      .from("quotes")
+      .insert({
+        slug: slug,
+        message: message,
+        views: 0,
+        likes: 0
+      })
+      .select()
+      .single();
 
-      document.getElementById("mainMessage").innerText = message;
-      document.getElementById("viewCount").innerText = views;
-      document.getElementById("likeCount").innerText = likes;
-
-      adjustFontSize();
-      renderComments();
+    if (error) {
+      alert("저장 중 오류가 발생했습니다.");
+      console.error(error);
+      return;
     }
 
-    function adjustFontSize() {
-      const messageEl = document.getElementById("mainMessage");
-      const length = messageEl.innerText.length;
+    const shareUrl = `${window.location.origin}${window.location.pathname}?q=${slug}`;
 
-      if (window.innerWidth <= 600) {
-        if (length > 70) messageEl.style.fontSize = "34px";
-        else if (length > 40) messageEl.style.fontSize = "42px";
-        else messageEl.style.fontSize = "52px";
-        return;
-      }
+    document.getElementById("shareBox").style.display = "block";
+    document.getElementById("shareBox").innerHTML = `
+      명언이 생성되었습니다.<br>
+      아래 주소를 지인에게 보내세요.<br><br>
+      ${shareUrl}
+    `;
 
-      if (length > 80) {
-        messageEl.style.fontSize = "44px";
-      } else if (length > 60) {
-        messageEl.style.fontSize = "56px";
-      } else if (length > 35) {
-        messageEl.style.fontSize = "72px";
-      } else {
-        messageEl.style.fontSize = "88px";
-      }
+    history.pushState(null, "", `?q=${slug}`);
+
+    await loadQuote(slug);
+  }
+
+  async function loadQuote(slug) {
+    const { data, error } = await db
+      .from("quotes")
+      .select("*")
+      .eq("slug", slug)
+      .single();
+
+    if (error || !data) {
+      alert("명언을 찾을 수 없습니다.");
+      return;
     }
 
-    function addLike() {
-      likes++;
-      localStorage.setItem("likes", likes);
-      document.getElementById("likeCount").innerText = likes;
+    currentQuote = data;
+
+    await db
+      .from("quotes")
+      .update({ views: data.views + 1 })
+      .eq("id", data.id);
+
+    currentQuote.views = data.views + 1;
+
+    showQuote();
+    await loadComments();
+  }
+
+  function showQuote() {
+    document.getElementById("writeBox").style.display = "none";
+    document.getElementById("messageScreen").style.display = "block";
+
+    document.getElementById("mainMessage").innerText = currentQuote.message;
+    document.getElementById("viewCount").innerText = currentQuote.views;
+    document.getElementById("likeCount").innerText = currentQuote.likes;
+
+    adjustFontSize();
+  }
+
+  function adjustFontSize() {
+    const messageEl = document.getElementById("mainMessage");
+    const length = messageEl.innerText.length;
+
+    if (window.innerWidth <= 600) {
+      if (length > 70) messageEl.style.fontSize = "34px";
+      else if (length > 40) messageEl.style.fontSize = "42px";
+      else messageEl.style.fontSize = "52px";
+      return;
     }
 
-    function addComment() {
-      const name = document.getElementById("nameInput").value.trim();
-      const text = document.getElementById("commentInput").value.trim();
+    if (length > 80) messageEl.style.fontSize = "44px";
+    else if (length > 60) messageEl.style.fontSize = "56px";
+    else if (length > 35) messageEl.style.fontSize = "72px";
+    else messageEl.style.fontSize = "88px";
+  }
 
-      if (!name || !text) {
-        alert("이름과 댓글을 입력해주세요.");
-        return;
-      }
+  async function addLike() {
+    if (!currentQuote) return;
 
-      comments.unshift({
+    const newLikes = currentQuote.likes + 1;
+
+    const { error } = await db
+      .from("quotes")
+      .update({ likes: newLikes })
+      .eq("id", currentQuote.id);
+
+    if (error) {
+      alert("좋아요 저장 실패");
+      console.error(error);
+      return;
+    }
+
+    currentQuote.likes = newLikes;
+    document.getElementById("likeCount").innerText = newLikes;
+  }
+
+  async function addComment() {
+    if (!currentQuote) return;
+
+    const name = document.getElementById("nameInput").value.trim();
+    const text = document.getElementById("commentInput").value.trim();
+
+    if (!name || !text) {
+      alert("이름과 댓글을 입력해주세요.");
+      return;
+    }
+
+    const { error } = await db
+      .from("comments")
+      .insert({
+        quote_id: currentQuote.id,
         name: name,
-        text: text,
-        time: new Date().toLocaleString()
+        comment: text
       });
 
-      localStorage.setItem("comments", JSON.stringify(comments));
-
-      document.getElementById("nameInput").value = "";
-      document.getElementById("commentInput").value = "";
-
-      renderComments();
+    if (error) {
+      alert("댓글 저장 실패");
+      console.error(error);
+      return;
     }
 
-    function renderComments() {
-      const commentsBox = document.getElementById("comments");
-      commentsBox.innerHTML = "";
+    document.getElementById("nameInput").value = "";
+    document.getElementById("commentInput").value = "";
 
-      comments.forEach(comment => {
-        const div = document.createElement("div");
-        div.className = "comment";
+    await loadComments();
+  }
 
-        div.innerHTML = `
-          <div class="comment-name">${escapeHtml(comment.name)}</div>
-          <div class="comment-text">${escapeHtml(comment.text)}</div>
-          <div class="comment-meta">${comment.time}</div>
-        `;
+  async function loadComments() {
+    const { data, error } = await db
+      .from("comments")
+      .select("*")
+      .eq("quote_id", currentQuote.id)
+      .order("created_at", { ascending: false });
 
-        commentsBox.appendChild(div);
-      });
+    if (error) {
+      console.error(error);
+      return;
     }
 
-    function resetMessage() {
-      const now = Date.now();
+    const commentsBox = document.getElementById("comments");
+    commentsBox.innerHTML = "";
 
-      if (message && now - createdAt < LOCK_TIME) {
-        const remain = LOCK_TIME - (now - createdAt);
-        const hours = Math.ceil(remain / (60 * 60 * 1000));
-        alert(`오늘의 명언은 약 ${hours}시간 후 다시 작성할 수 있습니다.`);
-        return;
-      }
+    data.forEach(comment => {
+      const div = document.createElement("div");
+      div.className = "comment";
 
-      localStorage.clear();
-      location.reload();
-    }
+      div.innerHTML = `
+        <div class="comment-name">${escapeHtml(comment.name)}</div>
+        <div class="comment-text">${escapeHtml(comment.comment)}</div>
+        <div class="comment-meta">${new Date(comment.created_at).toLocaleString()}</div>
+      `;
 
-    function escapeHtml(text) {
-      return text
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-  </script>
+      commentsBox.appendChild(div);
+    });
+  }
+
+  function goHome() {
+    window.location.href = window.location.origin + window.location.pathname;
+  }
+
+  function escapeHtml(text) {
+    return text
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+</script>
 
 </body>
 </html>
